@@ -10,7 +10,7 @@ namespace EFCoreMovies.Entities
         [Column(TypeName = "Date")]
         public DateTime EndDate { get; set; }
 
-        [Precision(precision: 3, scale: 2)]
+        [Precision(precision: 5, scale: 2)]
         public decimal Discount { get; set; }
         public int CinemaId { get; set; }
 

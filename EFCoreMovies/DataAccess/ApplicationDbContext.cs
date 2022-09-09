@@ -1,4 +1,5 @@
 ﻿using EFCoreMovies.Entities;
+using EFCoreMovies.Entities.Seeding;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 
@@ -19,6 +20,8 @@ namespace EFCoreMovies.DataAccess
              (Assembly.GetExecutingAssembly()) => Permite pasar por parámetro el ensablado que se esta ejecyutando 
              */
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+            // Ejecutamos data seeder
+            SeedingModuloConsulta.Seed(modelBuilder);
 
         }
 

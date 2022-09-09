@@ -13,7 +13,7 @@ namespace EFCoreMovies.Entities
     public class CinemaRoom: BaseEntity
     {
         [Required]
-        [Precision(precision: 3, scale: 2)]
+        [Precision(precision: 5, scale: 2)]
         public decimal Price { get; set; }
         [Required]
         public RoomType RoomType { get; set; }
