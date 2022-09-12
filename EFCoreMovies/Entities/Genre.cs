@@ -4,9 +4,8 @@ namespace EFCoreMovies.Entities
 {
     public class Genre: BaseEntity
     {
-        [Required]
-        [MaxLength(50)]
         public string Name { get; set; }    
+        public bool IsDeleted { get; set; }
         public HashSet<Movie> Movies { get; set; }
 
     }

@@ -2,6 +2,7 @@
 using AutoMapper.QueryableExtensions;
 using EFCoreMovies.DataAccess;
 using EFCoreMovies.DTOs.Cinema;
+using EFCoreMovies.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite;
@@ -64,6 +65,16 @@ namespace EFCoreMovies.Controllers
 
             return Ok(cinemas);
         }
+
+        [HttpPost]
+        public async Task<ActionResult> Post(CinemaCreateDto cinemaCreateDto)
+        {
+            var cinema = _mapper.Map<Cinema>(cinemaCreateDto);
+            _context.Add(cinema);   
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
 
 
     }

@@ -4,6 +4,8 @@ using EFCoreMovies.DTOs.Cinema;
 using EFCoreMovies.DTOs.Genre;
 using EFCoreMovies.DTOs.MovieDto;
 using EFCoreMovies.Entities;
+using NetTopologySuite;
+using NetTopologySuite.Geometries;
 
 namespace EFCoreMovies.Services
 {
@@ -25,6 +27,29 @@ namespace EFCoreMovies.Services
                 .ForMember(dto => dto.Actors,
                 ent => ent.MapFrom(prop => prop.MoviesActors.Select(movActor => movActor.Actor)));
 
+
+            // Configuración Dtos para la creación de cinema y sus entidades relacionadas no existentes
+            var geaometryFactory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
+            CreateMap<CinemaCreateDto, Cinema>()
+                .ForMember(ent => ent.Location, 
+                dto => dto.MapFrom(prop => geaometryFactory
+                .CreatePoint(new Coordinate(prop.Longitude, prop.Latitude))));
+
+            CreateMap<CinemaDiscountCreateDto, CinemaDiscount>();
+            CreateMap<CinemaRoomCreateDto, CinemaRoom>();
+
+            // Configuración Dtos para la creación de pelicuas y entidades relacionadas ya existentes
+            CreateMap<MovieCreateDto, Movie>()
+                 .ForMember(ent => ent.Genres,
+                 dto => dto.MapFrom(prop => prop.Genres
+                 .Select(id => new Genre() { Id = id })))
+            .ForMember(ent => ent.CinemaRooms,
+                 dto => dto.MapFrom(prop => prop.CinemaRooms
+                 .Select(id => new CinemaRoom() { Id = id })));
+            CreateMap<MovieActorCreateDto, MovieActor>();
+
+            // Configuración dto para creación aislada de actor
+            CreateMap<ActorCreateDto, Actor>();
         }
 
 

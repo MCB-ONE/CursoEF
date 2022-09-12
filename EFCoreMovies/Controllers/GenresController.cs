@@ -39,29 +39,86 @@ namespace EFCoreMovies.Controllers
             return Ok(genre);
         }
 
-        [HttpGet("filter")]
-        public async Task<IEnumerable<Genre>> FilterByName(string name)
+        [HttpPost]
+        public async Task<ActionResult> Post(Genre genre)
         {
-            return await _context.Genres
-                .Where(g => g.Name.Contains(name))
-                .ToListAsync();
+            // _context.Entry(entidad).State => devuelve el estado de seguimiento de la entidad por dbContext
+            var status1 = _context.Entry(genre).State; // Desasociado
+            _context.Add(genre);
+            var status2 = _context.Entry(genre).State; //Agregado
+            await _context.SaveChangesAsync();
+            var status3 = _context.Entry(genre).State; //Sin cambios
+            return Ok();
         }
 
-        // Paginación de dos en dos elementos
-        [HttpGet("pagination")]
-        public async Task<ActionResult<IEnumerable<Genre>>> GetPagination(int page = 1)
+        [HttpPost("varios")]
+        public async Task<ActionResult> Post(Genre[] genres)
         {
-            var registresPerPage = 2;
+            // _context.AddRange => Permite agregar un conjunto de registros 
+            _context.AddRange(genres);
+            await _context.SaveChangesAsync();
+            return Ok();
 
-            var genres = await _context.Genres
-                .Skip((page - 1) * registresPerPage)
-                .Take(registresPerPage)
-                .ToListAsync();
-
-            return Ok(genres);
         }
 
+        // Borrado normal
+        [HttpDelete("{id:int}")]
+        public async Task<ActionResult> Delete(int id)
+        {
+            var genre = _context.Genres.FirstOrDefault(g => g.Id == id);
+            if (genre is null)
+            {
+                return NotFound();
+            }
+            _context.Remove(genre);
+            await _context.SaveChangesAsync();
 
+            return Ok();
 
+        }
+
+        // Soft Delete => Sirve para marcar un registro como borrado pero no borrarlo de la tabla (permite no borrar data importante y poder hacer seguimiento, test, etc.)
+        [HttpDelete("softDelete/{id:int}")]
+        public async Task<ActionResult> softDelete(int id)
+        {
+            // Aplicamos eguimiento a la entidad recuperada
+            var genre = await _context.Genres.AsTracking().FirstOrDefaultAsync(g => g.Id == id);
+
+            if (genre is null)
+            {
+                return NotFound();
+            }
+
+            // En este caso no borramos el registro de la bdd si no que seteamos la propiedad de borrado en true
+            genre.IsDeleted = true;
+
+            await _context.SaveChangesAsync();
+
+            return Ok();
+
+        }
+
+        // Endpoint para restaurar registros => en este caso registros borrados por soft delete
+        [HttpPost("restore/{id:int}")]
+        public async Task<ActionResult> Restore(int id)
+        {
+            // Aplicamos eguimiento a la entidad recuperada
+            var genre = await _context.Genres.AsTracking()
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(gen => gen.Id == id);
+
+            if (genre is null)
+            {
+                return NotFound();
+            }
+
+            // En este caso no borramos el registro de la bdd si no que seteamos la propiedad de borrado en true
+            genre.IsDeleted = false;
+
+            await _context.SaveChangesAsync();
+
+            return Ok();
+
+        }
     }
 }

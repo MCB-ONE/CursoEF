@@ -49,7 +49,7 @@ namespace EFCoreMovies.Controllers
 
         }
 
-        // Carga de entidades relacionadas usando select()
+        // Carga de entidades relacionadas usando selectLaoding
         [HttpGet("selectiveLoading/{id:int}")]
         public async Task<ActionResult> GetSelective(int id)
         {
@@ -127,7 +127,7 @@ namespace EFCoreMovies.Controllers
         }
 
 
-        // Uso de ejecución diferida para aplicar filtros dinámicos
+        // Uso de ejecución diferida para realizar peticiones dinámicas (por ejemplo:  aplicar filtros dinámicos)
         [HttpGet("filter")]
         public async Task<ActionResult<List<MovieDto>>> Filter([FromQuery] MovieFilterDto movieFilterDto )
         {
@@ -163,7 +163,34 @@ namespace EFCoreMovies.Controllers
             return Ok(_mapper.Map<List<MovieDto>>(movies));
         }
 
+        [HttpPost]
+        public async Task<ActionResult> Post(MovieCreateDto movieCreateDto)
+        {
+            //mapeamos dto a entidad tabla
+            var movie = _mapper.Map<Movie>(movieCreateDto);
 
+            /*Usamos el status para agregar generos y salas de cine ya existentes a la nueva pelicula a crear
+             * con EnititySate.Unchanged => Decimos a ef  que son solo generos de consulta
+             * no queremos modificar ni actualizar aquellos que ya existen en la bd, pero si añadiros como una relación.*/
+            movie.Genres.ForEach(gen => _context.Entry(gen).State = EntityState.Unchanged);
+            movie.CinemaRooms.ForEach(room => _context.Entry(room).State = EntityState.Unchanged);
+
+            /*
+             Para la relación ManyToMany si queremos controlar la crción del nuevo registro             
+             */
+            if(movie.MoviesActors is not null)
+            {
+                for(int i = 0; i < movie.MoviesActors.Count; i++)
+                {
+                    movie.MoviesActors[i].Order = i;
+                }
+            }
+
+            _context.Add(movie);
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
 
     }
 }

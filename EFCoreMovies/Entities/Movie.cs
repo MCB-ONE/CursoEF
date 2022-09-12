@@ -20,11 +20,12 @@ namespace EFCoreMovies.Entities
         public string PosterUrl { get; set; }
 
         // AUTOMATIC Many to many relationships: Tabla intermedia creada por ef
-        public HashSet<Genre> Genres { get; set; }
-        public HashSet<CinemaRoom> CinemaRooms { get; set; }
+        //Hemos de usar List no HashSet (ya que hashSet no es un  IEnumerable)
+        public List<Genre> Genres { get; set; } 
+        public List<CinemaRoom> CinemaRooms { get; set; }
 
         // MANUAL Many to many relationship: Usando entidad intermedia para acceder a la tabla de relación
-        public HashSet<MovieActor> MoviesActors { get; set; }
+        public List<MovieActor> MoviesActors { get; set; }
 
     }
 }
